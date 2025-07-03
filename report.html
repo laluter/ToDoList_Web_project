@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do Report</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .report-section { max-width: 550px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.06);}
+    .report-tabs { display: flex; gap: 8px; margin-bottom: 18px;}
+    .report-tab { background: #e4e9f7; border: none; border-radius: 20px; padding: 8px 16px; font-size: 1em; cursor: pointer;}
+    .report-tab.active { background: #4255d4; color: #fff;}
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 14px;}
+    .report-table th, .report-table td { border: 1px solid #eee; padding: 8px 6px;}
+    .report-table th { background: #f5f5ff;}
+    .report-chart { width: 95%; max-width: 420px; margin: 10px auto 24px auto; }
+  </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="report-section">
+    <h2>할 일 완료 현황 보고서</h2>
+    <div class="report-tabs">
+      <button class="report-tab active" data-tab="daily">일일</button>
+      <button class="report-tab" data-tab="weekly">주간</button>
+      <button class="report-tab" data-tab="monthly">월간</button>
+      <button class="report-tab" onclick="window.location.href='index.html'">← 돌아가기</button>
+    </div>
+    <div id="report-content">
+      <canvas id="reportChart" class="report-chart"></canvas>
+      <div id="report-table-wrap"></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    // --- 집계 유틸리티 ---
+    function getTasks() {
+      const user = getCurrentUser();
+      const users = getUsers();
+      if (!users[user] || !users[user].tasks) return [];
+      return users[user].tasks;
+    }
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+    function getWeekYear(date) {
+      const d = new Date(date);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 4 - (d.getDay()||7));
+      const yearStart = new Date(d.getFullYear(),0,1);
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      return `${d.getFullYear()}-${('0'+weekNo).slice(-2)}`;
+    }
+    function getMonth(date) {
+      const d = new Date(date);
+      return `${d.getFullYear()}-${('0'+(d.getMonth()+1)).slice(-2)}`;
+    }
+    function groupBy(tasks, period) {
+      const stat = {};
+      tasks.forEach(t => {
+        let dstr = (t.deadline && t.deadline !== "미설정") ? t.deadline.split(' ')[0] : null;
+        let dateObj;
+        if (dstr && /^\d{4}-\d{2}-\d{2}$/.test(dstr)) {
+          dateObj = new Date(dstr);
+        } else {
+          dateObj = new Date(Number(String(t.id).substring(0, 13)));
+        }
+        let key;
+        if (period === 'daily') key = formatDate(dateObj);
+        if (period === 'weekly') key = getWeekYear(dateObj);
+        if (period === 'monthly') key = getMonth(dateObj);
+        if (!stat[key]) stat[key] = { done: 0, notyet: 0, dateObj };
+        if (t.done) stat[key].done++;
+        else stat[key].notyet++;
+      });
+      let arr = Object.entries(stat)
+        .sort((a, b) => b[1].dateObj - a[1].dateObj);
+      if (period === 'daily') arr = arr.slice(0, 7).reverse();
+      else arr = arr.slice(0, 10);
+      return arr;
+    }
+
+    // --- Chart.js 변수
+    let chart = null;
+
+    function renderChart(period, statArr) {
+    const ctx = document.getElementById('reportChart').getContext('2d');
+    if (chart) { chart.destroy(); }
+
+    if (period === 'daily') {
+        const labels = statArr.map(([k, v]) => k);
+        const totalArr = statArr.map(([k, v]) => v.done + v.notyet);
+        const doneArr = statArr.map(([k, v]) => v.done);
+        const maxTotal = Math.max(...totalArr, 1);
+
+        chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+            {
+                label: '완료',
+                data: doneArr,
+                backgroundColor: '#4255d4'
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+            legend: { display: false },
+            title: { display: true, text: '최근 7일 완료 현황' },
+            tooltip: {
+                callbacks: {
+                title: function(context) { return context[0].label; },
+                label: function(context) {
+                    const idx = context.dataIndex;
+                    return `완료: ${doneArr[idx]} / 전체: ${totalArr[idx]}`;
+                }
+                }
+            }
+            },
+            scales: {
+            x: {},
+            y: {
+                beginAtZero: true,
+                suggestedMax: maxTotal,
+                ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                    if (Number.isInteger(value)) return value;
+                    return '';
+                }
+                }
+            }
+            }
+        }
+        });
+    } else {
+        const sum = statArr.reduce((a, [k, v]) => {
+        a.done += v.done; a.notyet += v.notyet; return a;
+        }, {done:0, notyet:0});
+        chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['완료', '미완료'],
+            datasets: [{
+            data: [sum.done, sum.notyet],
+            backgroundColor: ['#4255d4', '#f44336']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+            legend: { position: 'top' },
+            title: { 
+                display: true, 
+                text: (period==='weekly'?'주간':'월간')+' 완료율 (최근 10주/월 합산)'
+            }
+            }
+        }
+        });
+    }
+    }
+
+    function renderTable(period, statArr) {
+      let html = `
+        <table class="report-table">
+          <tr>
+            <th>${period==='daily'?'날짜':period==='weekly'?'연도-주차':'연도-월'}</th>
+            <th>완료</th>
+            <th>미완료</th>
+            <th>완료율</th>
+          </tr>
+      `;
+      statArr.forEach(([key, val]) => {
+        const total = val.done + val.notyet;
+        const rate = total ? ((val.done/total)*100).toFixed(1)+'%' : '-';
+        html += `<tr>
+          <td>${key}</td>
+          <td>${val.done}</td>
+          <td>${val.notyet}</td>
+          <td>${rate}</td>
+        </tr>`;
+      });
+      html += `</table>`;
+      document.getElementById('report-table-wrap').innerHTML = html;
+    }
+
+    function renderReport(period) {
+      const tasks = getTasks();
+      const statArr = groupBy(tasks, period);
+      renderChart(period, statArr);
+      renderTable(period, statArr);
+    }
+
+    // 탭 이벤트
+    document.querySelectorAll('.report-tab').forEach(btn => {
+      btn.addEventListener('click', function(){
+        if(!btn.dataset.tab) return;
+        document.querySelectorAll('.report-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderReport(btn.dataset.tab || 'daily');
+      });
+    });
+
+    // 최초 렌더
+    renderReport('daily');
+  </script>
+</body>
+</html>

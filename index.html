@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List with Template First</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 템플릿 선택 화면 -->
+  <div id="template-section" class="auth-section">
+    <h2>맞춤형 To-Do 템플릿 선택</h2>
+    <div id="template-select">
+      <!-- 템플릿 버튼들이 동적으로 생성됩니다 -->
+    </div>
+    <div id="template-preview" style="margin-top:18px;"></div>
+    <div id="template-actions" style="margin-top:18px; display:none;">
+      <button id="apply-template-btn">추가하기</button>
+    </div>
+    <!-- 건너뛰기 버튼을 항상 보이게 추가 -->
+    <div style="margin-top:18px;">
+      <button id="skip-template-always" class="link-btn">템플릿 없이 시작하기</button>
+    </div>
+  </div>
+
+  <!-- 메인 To-Do 앱 화면 -->
+  <div id="app-container" style="display:none;">
+    <div class="top-bar">
+      <span id="user-info"></span>
+      <button id="login-modal-btn" class="login-btn" style="display:none;">로그인/회원가입</button>
+      <button id="logout-btn" class="logout-btn" style="display:none;">로그아웃</button>
+      <button id="edit-templates-btn" class="login-btn" style="margin-left:8px;">템플릿 관리</button>
+    </div>
+    <div class="category-bar" id="categoryBtns"></div>
+    <button class="cat-manage-btn" id="openCatModal">＋카테고리</button>
+    <button class="report-btn" onclick="window.location.href='report.html'" style="margin:10px 0 0 8px;">
+      📊 보고서 페이지로 이동
+    </button>
+    <div class="section">
+      <h2>오늘</h2>
+      <ul id="taskList"></ul>
+      <div class="completed-section">
+        <h2>오늘 완료</h2>
+        <ul id="completedList"></ul>
+      </div>
+    </div>
+    <button class="add-btn" id="openAddModal">＋</button>
+  </div>
+
+  <!-- 로그인/회원가입 모달 -->
+  <div class="modal-bg" id="loginModalBg">
+    <div class="modal" style="min-width:300px;">
+      <div id="login-section" class="auth-section" style="box-shadow:none; margin:0; padding:0;">
+        <h2>로그인</h2>
+        <input type="text" id="login-username" placeholder="아이디">
+        <input type="password" id="login-password" placeholder="비밀번호">
+        <button id="login-btn">로그인</button>
+        <button id="goto-register-btn" class="link-btn">회원가입</button>
+        <div id="login-error" class="auth-error"></div>
+      </div>
+      <div id="register-section" class="auth-section" style="box-shadow:none; margin:0; padding:0; display:none;">
+        <h2>회원가입</h2>
+        <input type="text" id="register-username" placeholder="아이디">
+        <input type="password" id="register-password" placeholder="비밀번호">
+        <input type="password" id="register-password2" placeholder="비밀번호 확인">
+        <button id="register-btn">가입하기</button>
+        <button id="back-to-login-btn" class="link-btn">뒤로</button>
+        <div id="register-error" class="auth-error"></div>
+      </div>
+      <button id="closeLoginModal" style="margin-top:8px;" class="link-btn">닫기</button>
+    </div>
+  </div>
+
+  <!-- 카테고리 관리 모달 -->
+  <div class="modal-bg" id="catModalBg">
+    <div class="modal">
+      <h3>카테고리 관리</h3>
+      <ul id="catEditList"></ul>
+      <input type="text" id="catAddInput" placeholder="새 카테고리">
+      <button id="addCatBtn">추가</button>
+      <button id="closeCatModal">닫기</button>
+    </div>
+  </div>
+
+  <!-- 할 일 추가 모달 -->
+  <div class="modal-bg" id="addModalBg">
+    <div class="modal">
+      <h3>할 일 추가</h3>
+      <input type="text" id="modal-title" placeholder="제목">
+      <div class="cat-select" id="modalCatSelect"></div>
+      <button id="openDetail">세부설정</button>
+      <button id="addTaskBtn">추가</button>
+      <button id="closeAddModal">닫기</button>
+    </div>
+  </div>
+
+  <!-- 세부설정 모달 -->
+  <div class="modal-bg" id="detailModalBg">
+    <div class="modal">
+      <h3>세부설정</h3>
+      <textarea id="modal-memo" placeholder="메모"></textarea>
+      <input type="date" id="modal-deadline-date">
+      <input type="time" id="modal-deadline-time">
+      <select id="modal-repeat">
+        <option value="none">반복 없음</option>
+        <option value="daily">매일</option>
+        <option value="weekly">매주</option>
+        <option value="monthly">매월</option>
+      </select>
+      <button id="closeDetailModal">확인</button>
+    </div>
+  </div>
+
+  <!-- 템플릿 항목 세부설정 모달 -->
+  <div class="modal-bg" id="tplDetailModalBg">
+    <div class="modal">
+      <h3>템플릿 세부설정</h3>
+      <div id="tpl-detail-title"></div>
+      <textarea id="tpl-modal-memo" placeholder="메모"></textarea>
+      <input type="date" id="tpl-modal-deadline-date">
+      <input type="time" id="tpl-modal-deadline-time">
+      <select id="tpl-modal-repeat">
+        <option value="none">반복 없음</option>
+        <option value="daily">매일</option>
+        <option value="weekly">매주</option>
+        <option value="monthly">매월</option>
+      </select>
+      <button id="closeTplDetailModal">확인</button>
+    </div>
+  </div>
+
+<!-- 템플릿 관리 모달 -->
+<div class="modal-bg" id="templateManageModalBg">
+  <div class="modal" style="min-width:400px; max-height:80vh; overflow-y:auto;">
+    <h3>템플릿 관리</h3>
+    <div class="template-list" id="templateList"></div>
+    <div class="template-edit-wrap">
+      <input type="text" id="templateNameInput" placeholder="템플릿 이름">
+      <button id="addTemplateBtn">템플릿 추가</button>
+      <button id="editTemplateBtn" style="display:none;">템플릿 저장</button>
+    </div>
+    <div id="templateTodoList" style="margin-top:12px;"></div>
+    <div class="template-edit-actions">
+      <button id="addTodoToTemplateBtn">To-Do 추가</button>
+      <!-- 새로 추가할 버튼 -->
+      <button id="openMainTemplateSelectBtn" style="background: #28a745;">템플릿에서 추가</button>
+      <button id="closeTemplateManageModal">닫기</button>
+    </div>
+  </div>
+</div>
+
+  <!-- 템플릿 To-Do 편집 모달 -->
+  <div class="modal-bg" id="tplTodoEditModalBg">
+    <div class="modal" style="min-width:350px;">
+      <h3 id="tpl-todo-modal-title">To-Do 편집</h3>
+      <input type="text" id="tpl-todo-title" placeholder="제목">
+      <input type="text" id="tpl-todo-category" placeholder="카테고리">
+      <textarea id="tpl-todo-memo" placeholder="메모"></textarea>
+      <input type="date" id="tpl-todo-deadline-date">
+      <input type="time" id="tpl-todo-deadline-time">
+      <select id="tpl-todo-repeat">
+        <option value="none">반복 없음</option>
+        <option value="daily">매일</option>
+        <option value="weekly">매주</option>
+        <option value="monthly">매월</option>
+      </select>
+      <div class="modal-actions">
+        <button id="saveTplTodoBtn">저장</button>
+        <button id="closeTplTodoEditModal">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인에서 템플릿 선택 및 추가 모달 -->
+  <div class="modal-bg" id="mainTemplateSelectModalBg">
+    <div class="modal" style="min-width:400px; max-height:80vh; overflow-y:auto;">
+      <h3>템플릿에서 To-Do 추가</h3>
+      <div class="template-select-list" id="mainTemplateSelectList"></div>
+      <div id="mainTemplatePreview" style="margin-top:16px;"></div>
+      <div class="template-actions" style="margin-top:16px;">
+        <button id="applyMainTemplateBtn" style="display:none;">선택한 항목 추가</button>
+        <button id="closeMainTemplateSelectModal">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // 건너뛰기 버튼 이벤트 추가
+    document.getElementById('skip-template-always').onclick = function() {
+      const user = getCurrentUser();
+      const users = getUsers();
+      if (!users[user]) {
+        users[user] = {
+          password: "",
+          categories: ["작업", "개인적인", "위시리스트"],
+          tasks: []
+        };
+        saveUsers(users);
+      }
+      loadUserData();
+      showApp();
+      renderCategories();
+      renderCatSelect();
+      renderTasks();
+    };
+  </script>
+</body>
+</html>
