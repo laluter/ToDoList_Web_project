@@ -56,7 +56,7 @@ https://youtu.be/DnyW5bJ7734
 
 - **[신윤섭]** (GitHub: (https://github.com/laluter))
 - - 역할: 프로젝트 기획, 프론트엔드 개발, 기본 to do 제작, 보고서 페이지, to do 스와이프 삭제, to do 상세 보기
-  - 
+    
 - **[홍슬기]** (GitHub: (https://github.com/Jason8521))
 - - 역할: 프로젝트 기획, 프론트엔드 개발, to do 템플릿(커스텀 기능 추가), 회원가입, 로그인, 로그아웃, 템플릿 별 to do list 샘플 제작 
 
