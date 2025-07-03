@@ -49,6 +49,7 @@ https://youtu.be/DnyW5bJ7734
 - **코드 리팩토링**: 가독성, 유지보수성, 확장성을 높이기 위해 전반적인 코드 구조를 개선하는 리팩토링을 진행할 예정입니다.
 
 예시
+
 ![image](https://github.com/user-attachments/assets/97c6717a-a7f5-4a8f-a021-534730980984)
 
 ---
