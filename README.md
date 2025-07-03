@@ -52,32 +52,59 @@ https://youtu.be/DnyW5bJ7734
 
 To do/
 ├── 📄 index.html              # 메인 HTML
+
 ├── 📄 report.html              # 보고서 HTML
+
 ├── 📁 src/                     # 모든 소스 코드를 담는 폴더
+
 │   ├── 📁 js/                  # JavaScript 파일 폴더
+
 │   │   ├── 📄 app.js             # 앱의 메인 진입점, 초기화 로직
+
 │   │   ├── 📁 components/       # UI 조각(컴포넌트) 관련 로직
+
 │   │   │   ├── 📄 taskList.js      # 할 일 목록을 생성하고 관리
+
 │   │   │   ├── 📄 modal.js        # 모든 모달(추가,수정,카테고리) 관리
+
 │   │   │   └── 📄 template.js     # 템플릿 선택 및 관리 로직
+
 │   │   │
+
 │   │   ├── 📁 services/         # 외부 서비스, API 연동 로직
+
 │   │   │   ├── 📄 storage.js       # LocalStorage 데이터 관리 로직
+
 │   │   │   └── 📄 firebase.js     # (향후) Firebase 연동 로직
+
 │   │   │
 │   │   └── 📁 utils/            # 여러 곳에서 사용되는 도우미 함수
+
 │   │       ├── 📄 date.js        # 날짜 관련 헬퍼 함수
+
 │   │       └── 📄 dom.js         # DOM 조작 관련 헬퍼 함수
+
 │   │
+
 │   ├── 📁 styles/               # CSS 스타일시트 폴더
+
 │   │   ├── 📄 main.css          # 공통 및 레이아웃 스타일
+
 │   │   └── 📄 components.css    # 버튼, 모달 등 컴포넌트 스타일
+
 │   │
+
+
 │   └── 📁 assets/               # 이미지, 아이콘 등 정적 파일 폴더
+
 │       └── 🖼️ report-icon.svg
+
 │
+
 ├── 📄 service-worker.js       # (향후) PWA 서비스워커
+
 ├── 📄 manifest.json           # (향후) PWA 웹 앱 매니페스트
+
 └── 📄 README.md               # 프로젝트 설명서
 
 ---
